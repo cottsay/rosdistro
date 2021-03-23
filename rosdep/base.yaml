@@ -815,6 +815,10 @@ enet:
   fedora: [enet-devel]
   gentoo: [net-libs/enet]
   ubuntu: [libenet-dev]
+eol_distro_test:
+  fedora:
+    '*': [bash]
+    '31': [bash, glibc]
 espeak:
   debian: [espeak]
   fedora: [espeak]
