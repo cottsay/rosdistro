@@ -2,6 +2,10 @@
 name: Automated review
 on:
   pull_request:
+    types:
+      - opened
+      - reopened
+      - review_requested
 
 permissions:
   pull-requests: write
@@ -10,6 +14,7 @@ jobs:
   automated_review:
     name: Generate automated review
     runs-on: ubuntu-latest
+    if: ${{ github.event.requested_team.name == 'github-actions' || !(github.event.requested_team.name) }}
     steps:
     - uses: actions/checkout@v4
       with:
