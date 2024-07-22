@@ -1,0 +1,16 @@
+---
+name: Automated review
+on:
+  pull_request:
+
+permissions:
+  pull-requests: write
+
+jobs:
+  automated_review:
+    name: Generate automated review
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - run: python3 -m pip install ./rosdistro_utils
+    - run: python3 -m rosdistro_utils
