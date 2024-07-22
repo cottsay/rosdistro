@@ -13,7 +13,4 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - run: python3 -m pip install ./rosdistro_utils
-    - run: python3 -m rosdistro_utils
-      env:
-        GITHUB_BASE_REF: ${{ github.event.pull_request.base.sha }}
-        GITHUB_HEAD_REF: ${{ github.event.pull_request.head.sha }}
+    - run: python3 -m rosdistro_utils ${{ github.event.pull_request.base.sha }} ${{ github.event.pull_request.head.sha }} ${{ github.event.pull_request.number }}
