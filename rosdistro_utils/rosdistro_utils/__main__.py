@@ -27,6 +27,6 @@ review = build(analyzers)
 if review:
     print(review.to_text(root=rosdistro_path))
 
-    if len(sys.argv) >= 4 and 'GITHUB_TOKEN' in os.environ and 'GITHUB_REPOSITORY' in os.environ:
+    if len(sys.argv) >= 4:
         print('Posting GitHub review...')
         post_review(os.environ['GITHUB_REPOSITORY'], int(sys.argv[3]), review)
