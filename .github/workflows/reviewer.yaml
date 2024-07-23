@@ -14,8 +14,9 @@ jobs:
   automated_review:
     name: Generate automated review
     runs-on: ubuntu-latest
-    if: ${{ !(github.event.requested_reviewer) || github.event.requested_reviewer.login == 'github-actions' }}
+    #if: ${{ !(github.event.requested_reviewer) || github.event.requested_reviewer.login == 'github-actions' }}
     steps:
+    - run: echo '${{ toJSON(github) }}' >> $GITHUB_STEP_SUMMARY
     - uses: actions/checkout@v4
       with:
         fetch-depth: 0
