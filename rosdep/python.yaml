@@ -4846,8 +4846,8 @@ python3-aiohttp-cors:
 python3-aioraven:
   '*':
     pip:
-      packages: [aioraven] # Should migrate to system package someday
-  archlinux: [python3-aioraven]
+      packages: [aioraven]  # Should migrate to system package someday
+  arch: [python3-aioraven]
   ubuntu:
     bionic: [python3-aioraven]
 python3-aiortc:
