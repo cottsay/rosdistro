@@ -1,3 +1,6 @@
+0ad:
+  fedora: [0ad] 
+  ubuntu: [0ad]
 ace:
   debian: [libace-dev]
   gentoo: [dev-libs/ace]
