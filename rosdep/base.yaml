@@ -1,3 +1,9 @@
+0ad:
+  fedora: [0ad]
+  ubuntu: [0ad]
+2ping:
+  fedora: [2ping]
+  ubuntu: [2ping]
 ace:
   debian: [libace-dev]
   gentoo: [dev-libs/ace]
