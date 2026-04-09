@@ -1,0 +1,95 @@
+---
+name: Cut a new ROS release
+
+on:  # yamllint disable-line rule:truthy
+  workflow_dispatch:
+    inputs:
+      distribution:
+        description: 'Which distribution is the release for?'
+        required: true
+        type: choice
+        options:
+        - 'jazzy'
+        - 'kilted'
+        - 'lyrical'
+        - 'rolling'
+        default: 'rolling'
+      date:
+        description: 'Release in YYYY-MM-DD. Default is today.'
+        required: false
+        type: string
+jobs:
+  cut-new-release:
+    permissions:
+      pull-requests: write
+      contents: write
+    runs-on: ubuntu-latest
+    steps:
+    # Add any missing inputs.
+    - name: Calculate final inputs
+      run: |
+        USER_INPUT="${{ inputs.date }}"
+        if [ -z "$USER_INPUT" ]; then
+          FINAL_DATE=$(TZ="America/Los_Angeles" date +%Y-%m-%d)
+          FINAL_REF=master
+          echo "Date used: $FINAL_DATE (branch: $FINAL_REF, must exist)"
+        else
+          FINAL_DATE=$USER_INPUT
+          FINAL_REF=${{ inputs.distribution }}/$FINAL_DATE
+          echo "Date provided: $FINAL_DATE (tag: $FINAL_REF, must exist)"
+        fi
+        NEW_URL_SUFFIX=${{ inputs.distribution }}/$FINAL_DATE/${{ inputs.distribution }}-cache.yaml.gz
+        echo "RELEASE_DISTRIBUTION=${{ inputs.distribution }}" >> $GITHUB_ENV
+        echo "RELEASE_DATE=$FINAL_DATE" >> $GITHUB_ENV
+        echo "RELEASE_REF=$FINAL_REF" >> $GITHUB_ENV
+        echo "RELEASE_TAG=${{ inputs.distribution }}/$FINAL_DATE" >> $GITHUB_ENV
+        echo "RELEASE_CACHE_NEW_URL=${{ github.server_url }}/${{ github.repository }}/releases/download/$NEW_URL_SUFFIX" >> $GITHUB_ENV
+
+    # Echo the release information to console.
+    - name: Print release information
+      run: |
+        echo "Ref: ${{ env.RELEASE_REF }}"
+        echo "Distribution: ${{ env.RELEASE_DISTRIBUTION }}"
+        echo "Date: ${{ env.RELEASE_DATE }}"
+        echo "Tag: ${{ env.RELEASE_TAG }}"
+        echo "New cache URL: ${{ env.RELEASE_CACHE_NEW_URL }}"
+
+    # Checkout the repository master branch.
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        ref: ${{ env.RELEASE_REF }}
+
+    # Set up a clean Python environment (Avoids OS-level pip blocks)
+    - name: Set up Python
+      uses: actions/setup-python@v6
+      with:
+        python-version: '3.11'
+        cache: 'pip'
+        pip-install: rosdistro
+
+    - name: Install yq
+      run: go install github.com/mikefarah/yq/v4@v4.52.5
+
+    # Rebuild the cache from scratch.
+    - name: Rebuild cache
+      working-directory: ${{ github.workspace }}/${{ env.RELEASE_DISTRIBUTION }}
+      run: rosdistro_build_cache ../index-v4.yaml ${{ env.RELEASE_DISTRIBUTION }}
+
+    # Commit the change to the distribution file and push the tagged orphaned commit.
+    - name: Tag orphaned commit for the release
+      run: |
+        git config --global user.name "github-actions[bot]"
+        git config --global user.email "github-actions[bot]@users.noreply.github.com"
+        yq -i '.distributions.${{ env.RELEASE_DISTRIBUTION }}.distribution_cache = "${{ env.RELEASE_CACHE_NEW_URL }}"' index.yaml
+        yq -i '.distributions.${{ env.RELEASE_DISTRIBUTION }}.distribution_cache = "${{ env.RELEASE_CACHE_NEW_URL }}"' index-v4.yaml
+        git add index.yaml index-v4.yaml
+        git commit -m "chore: update cache entry for ${{ env.RELEASE_DISTRIBUTION }}"
+        git tag ${{ env.RELEASE_TAG }}
+        git push origin ${{ env.RELEASE_TAG }}
+
+    - name: Push release
+      uses: softprops/action-gh-release@v2
+      with:
+        tag_name: ${{ env.RELEASE_TAG }}
+        files: ${{ env.RELEASE_DISTRIBUTION }}/${{ env.RELEASE_DISTRIBUTION }}-cache.yaml.gz
