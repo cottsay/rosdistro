@@ -21,6 +21,6 @@ jobs:
       with:
         fetch-depth: 0
     - run: git fetch origin ${{ github.event.pull_request.head.sha }}
-    - uses: ros-infrastructure/rosdistro-reviewer@main
+    - uses: ros-infrastructure/rosdistro-reviewer@cottsay/check-bloom-version
       with:
         token: ${{ github.token }}
