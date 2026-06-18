@@ -1,7 +1,7 @@
 aaa-pip:
   '*':
     pip:
-      packages: [aaa] 
+      packages: [aaa]
 adafruit-ads1x15-pip:
   debian:
     pip:
